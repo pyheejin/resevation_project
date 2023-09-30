@@ -359,3 +359,5 @@ migrations
 static
 
 # End of https://www.toptal.com/developers/gitignore/api/pycharm,python,venv,macos,visualstudiocode
+*.xml
+.idea/vcs.xml
