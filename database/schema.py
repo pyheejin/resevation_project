@@ -18,6 +18,14 @@ class LoginSchema(Schema):
 login_schema = LoginSchema(many=False)
 
 
+class UserListSchema(Schema):
+    id = fields.Int()
+    name = fields.String()
+
+
+user_list_schema = UserListSchema(many=True)
+
+
 class UserDetailSchema(Schema):
     id = fields.Int()
     status = fields.Int()

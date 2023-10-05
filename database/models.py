@@ -33,11 +33,11 @@ class User(Base):
     # 부분 암호화
     @hybrid_property
     def _password(self):
-        return cryptocode.decrypt(self.password, config.key)
+        return cryptocode.decrypt(self.password, config.KEY)
 
     @_password.setter
     def _password(self, value):
-        self.password = cryptocode.encrypt(value, config.key)
+        self.password = cryptocode.encrypt(value, config.KEY)
 
 
 class Business(Base):
@@ -78,7 +78,9 @@ class Product(Base):
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
-    user = relationship('User', back_populates='products')
+    user = relationship('User')
+    product_images = relationship('ProductImage', back_populates='product')
+    product_options = relationship('ProductOption', back_populates='product')
 
 
 class ProductOption(Base):
@@ -95,7 +97,7 @@ class ProductOption(Base):
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
-    product = relationship('Product', back_populates='options')
+    product = relationship('Product', back_populates='product_options')
 
 
 class ProductImage(Base):
@@ -122,7 +124,7 @@ class Review(Base):
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
-    product = relationship('Product', back_populates='product_reviews')
+    product = relationship('Product')
 
 
 class ReviewImage(Base):
@@ -135,7 +137,7 @@ class ReviewImage(Base):
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
-    review = relationship('Review', back_populates='review_images')
+    review = relationship('Review')
 
 
 class Qna(Base):

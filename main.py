@@ -1,10 +1,15 @@
 import uvicorn
 
-from fastapi import FastAPI
+from typing_extensions import Annotated
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi import Depends, FastAPI, HTTPException, status
 from starlette.routing import Mount
 from starlette.applications import Starlette
 from starlette.middleware.cors import CORSMiddleware
 
+from config import common
+from database.models import User
+from database.database import get_db
 from router import admin_api, api, webpage
 
 
@@ -46,8 +51,8 @@ def create_app():
 
 
     app = Starlette(routes=[
-        Mount('/api/v1/_docs', app),
-        Mount('/admin/api/v1/_docs', admin),
+        Mount('/api/v1', app),
+        Mount('/admin/api/v1', admin),
         Mount('', web_page),
     ])
     return app
@@ -57,7 +62,9 @@ app = create_app()
 
 
 origins = [
-    'http://localhost:3000'
+    'http://localhost:3000',
+    'http://127.0.0.1:7000',
+    '*'
 ]
 
 app.add_middleware(
@@ -70,4 +77,4 @@ app.add_middleware(
 
 
 if __name__ == '__main__':
-    uvicorn.run('main:app', host='0.0.0.0', port=8000, reload=True)
+    uvicorn.run('main:app', host='0.0.0.0', port=7000, reload=True)

@@ -1,12 +1,14 @@
 from fastapi import Depends, Request, APIRouter
 from fastapi.responses import Response
 from typing import Optional
+from typing_extensions import Annotated
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from config import common, constant
 from database import base_model
 from database.database import *
+from database.models import User
 from controller import user_controller
 
 
@@ -16,16 +18,16 @@ router = APIRouter(
 
 
 class PostUserLoginModel(BaseModel):
-    login_id: str = 'rysa'
-    password: str = 'rysa'
+    login_id: str = 'heejin'
+    password: str = 'heejin'
 
 
 class PostUserJoinModel(BaseModel):
-    login_id: str = 'rysa'
-    password: str = 'rysa'
-    name: Optional[str] = 'rysa'
+    login_id: str = 'heejin'
+    password: str = 'heejin'
+    name: Optional[str] = 'heejin'
     phone: Optional[str] = '010-0000-0000'
-    email: Optional[str] = 'rysa@koreabeautydata.com'
+    email: Optional[str] = 'heejin@heejin.com'
 
 
 @router.post('/join', tags=['user'], summary='회원가입')
@@ -109,6 +111,39 @@ def post_user_logout(response_cookie: Response,
         response = user_controller.post_user_logout(session=session,
                                                     request=request,
                                                     response_cookie=response_cookie)
+        response.result_msg = f'{response.result_msg}'
+
+    except TypeError as e:
+        print(e.args[0])
+        session.rollback()
+
+        response = base_model.DefaultModel()
+        common.error_response(response, e.args[0], f'{result_msg} 실패')
+    except Exception as e:
+        print(e.args[0])
+        print(e)
+
+        session.rollback()
+
+        response = base_model.DefaultModel()
+        common.error_response(response, e.args[0], f'{result_msg} 실패')
+    else:
+        session.commit()
+
+        if response is None:
+            response = base_model.DefaultModel()
+        if response.result_msg is not None:
+            response.result_msg = result_msg + ' 성공'
+    finally:
+        session.close()
+    return response
+
+
+@router.get('', tags=['user'], summary='유저 목록', dependencies=[Depends(common.get_current_active_user)])
+def get_user(session: Session = Depends(get_db)):
+    result_msg = '유저 목록'
+    try:
+        response = user_controller.get_user(session=session)
         response.result_msg = f'{response.result_msg}'
 
     except TypeError as e:
