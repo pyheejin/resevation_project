@@ -103,14 +103,12 @@ def post_user_login(request: PostUserLoginModel,
 
 
 @router.post('/logout', tags=['user'], summary='로그아웃')
-def post_user_logout(response_cookie: Response,
-                     request: Request,
+def post_user_logout(request: Request,
                      session: Session = Depends(get_db)):
     result_msg = '로그아웃'
     try:
-        response = user_controller.post_user_logout(session=session,
-                                                    request=request,
-                                                    response_cookie=response_cookie)
+        response = user_controller.post_user_logout(request=request,
+                                                    session=session)
         response.result_msg = f'{response.result_msg}'
 
     except TypeError as e:

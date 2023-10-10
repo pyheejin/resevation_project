@@ -51,7 +51,7 @@ def post_user_login(request, session, response_cookie):
 
     # 로그인 성공 시 토큰 발급
     payload = {
-        'sub': user.name
+        'user': login_schema.dump(user)
     }
 
     jwt = JWT()
@@ -62,6 +62,7 @@ def post_user_login(request, session, response_cookie):
     access_token = jwt.create_access_token(payload)
     refresh_token = jwt.create_refresh_token(payload)
 
+    user.access_token = access_token
     user.refresh_token = refresh_token
     user.last_login_date = datetime.now()
 
@@ -71,7 +72,10 @@ def post_user_login(request, session, response_cookie):
                                httponly=True,
                                expires=refresh_expires)
 
-    response.result_data['access_token'] = access_token
+    response.result_data = {
+        'access_token': access_token,
+        'refresh_token': refresh_token
+    }
     return response
 
 

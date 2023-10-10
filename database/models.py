@@ -26,6 +26,7 @@ class User(Base):
     total_amount = Column(Integer, default=0, comment='총 구매 금액')
     last_paid_at = Column(DateTime, comment='최종 결제일')
     point = Column(Integer, default=0, comment='보유 적립금')
+    access_token = Column(Text, comment='Access Token')
     refresh_token = Column(Text, comment='Refresh Token')
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
