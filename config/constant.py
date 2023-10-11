@@ -18,6 +18,7 @@ ERROR_INTERNAL_SERVER = 'internal_server'
 ERROR_NOT_IMPLEMENTED = 'not_implemented'
 ERROR_DATA_NOT_EXIST = 'data_not_exist'
 ERROR_USER_NOT_EXIST = 'user_not_exist'
+ERROR_USER_EXIST = 'user_already_exist'
 ERROR_NEED_MORE_POINT = 'need_more_point'
 ERROR_INVALID_TOKEN = 'invalid_token'
 ERROR_ACCESS_TOKEN_EXPIRED = 'access_token_expired'
@@ -31,6 +32,7 @@ ERROR_WRONG_NICKNAME_LENGTH = 'wrong_nickname_length'
 ERROR_WRONG_NICKNAME_GRAMMAR = 'wrong_nickname_grammar'
 ERROR_WRONG_EMAIL_FORM = 'wrong_email_form'
 ERROR_CHANGE_PASSWORD = 'change_password'
+ERROR_DOESNT_MATCH_ID_OR_PASSWORD = "doesn't match id or password"
 
 ERROR_DIC = {
     ERROR_BAD_REQUEST: (400, '잘못된 요청입니다'),
@@ -41,6 +43,7 @@ ERROR_DIC = {
     ERROR_NOT_IMPLEMENTED: (501, '업데이트 예정입니다'),
     ERROR_DATA_NOT_EXIST: (204, '데이터가 존재하지 않습니다'),
     ERROR_USER_NOT_EXIST: (210, '해당 전화번호로 가입하신 계정이 존재하지 않습니다.'),
+    ERROR_USER_EXIST: (211, '중복된 아이디 입니다.'),
     ERROR_NEED_MORE_POINT: (300, '포인트가 부족합니다.'),
     ERROR_INVALID_TOKEN: (301, '토큰이 잘못되었습니다.'),
     ERROR_ACCESS_TOKEN_EXPIRED: (302, '토큰 기간이 만료되었습니다.'),
@@ -52,4 +55,5 @@ ERROR_DIC = {
     ERROR_WRONG_NICKNAME_GRAMMAR: (270, '.과 _외 특수문자 및 공백은 사용할 수 없습니다.'),
     ERROR_WRONG_EMAIL_FORM: (280, '올바른 이메일 형식이 아닙니다.'),
     ERROR_CHANGE_PASSWORD: (290, '비밀번호를 변경해주세요.'),
+    ERROR_DOESNT_MATCH_ID_OR_PASSWORD: (291, '아이디 혹은 비밀번호가 일치하지 않습니다.'),
 }

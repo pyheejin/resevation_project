@@ -1,7 +1,9 @@
-from config.jwt_handler import JWT
+from fastapi import HTTPException
 
 from database.models import *
 from database.schema import *
+from config.jwt_handler import JWT
+from config.constant import ERROR_DIC
 from database.base_model import DefaultModel
 
 
@@ -18,7 +20,8 @@ def post_user_join(request, session):
     user = session.query(User).filter(User.login_id == login_id,
                                       User.status == constant.STATUS_ACTIVE).first()
     if user is not None:
-        raise TypeError('중복된 아이디 입니다.')
+        raise HTTPException(detail=ERROR_DIC[constant.ERROR_USER_EXIST][1],
+                            status_code=ERROR_DIC[constant.ERROR_USER_EXIST][0])
 
     user = User()
     user.login_id = login_id
@@ -44,10 +47,12 @@ def post_user_login(request, session, response_cookie):
     user = session.query(User).filter(User.login_id == login_id,
                                       User.status == constant.STATUS_ACTIVE).first()
     if user is None:
-        raise TypeError(constant.ERROR_DATA_NOT_EXIST)
+        raise HTTPException(detail=ERROR_DIC[constant.ERROR_DATA_NOT_EXIST][1],
+                            status_code=ERROR_DIC[constant.ERROR_DATA_NOT_EXIST][0])
 
     if user._password != password:
-        raise TypeError('아이디 혹은 비밀번호가 일치하지 않습니다.')
+        raise HTTPException(detail=ERROR_DIC[constant.ERROR_DOESNT_MATCH_ID_OR_PASSWORD][1],
+                            status_code=ERROR_DIC[constant.ERROR_DOESNT_MATCH_ID_OR_PASSWORD][0])
 
     # 로그인 성공 시 토큰 발급
     payload = {

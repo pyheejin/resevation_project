@@ -1,4 +1,4 @@
-from fastapi import Depends, Request, APIRouter
+from fastapi import Depends, Request, APIRouter, HTTPException
 from fastapi.responses import Response
 from typing import Optional
 from typing_extensions import Annotated
@@ -38,13 +38,13 @@ def post_user_join(request: PostUserJoinModel,
         response = user_controller.post_user_join(request=request,
                                                   session=session)
         response.result_msg = f'{response.result_msg}'
-    except TypeError as e:
-        print(e.args[0])
+    except HTTPException as e:
+        print(e.detail)
 
         session.rollback()
 
         response = base_model.DefaultModel()
-        common.error_response(response, e.args[0], f'{result_msg} 실패')
+        common.error_response(response, e.detail, f'{result_msg} 실패')
     except Exception as e:
         print(e.args[0])
 
@@ -75,13 +75,13 @@ def post_user_login(request: PostUserLoginModel,
                                                    response_cookie=response_cookie,
                                                    session=session)
         response.result_msg = f'{response.result_msg}'
+    except HTTPException as e:
+        print(e.detail)
 
-    except TypeError as e:
-        print(e.args[0])
         session.rollback()
 
         response = base_model.DefaultModel()
-        common.error_response(response, e.args[0], f'{result_msg} 실패')
+        common.error_response(response, e.detail, f'{result_msg} 실패')
     except Exception as e:
         print(e.args[0])
         print(e)
@@ -110,13 +110,13 @@ def post_user_logout(request: Request,
         response = user_controller.post_user_logout(request=request,
                                                     session=session)
         response.result_msg = f'{response.result_msg}'
+    except HTTPException as e:
+        print(e.detail)
 
-    except TypeError as e:
-        print(e.args[0])
         session.rollback()
 
         response = base_model.DefaultModel()
-        common.error_response(response, e.args[0], f'{result_msg} 실패')
+        common.error_response(response, e.detail, f'{result_msg} 실패')
     except Exception as e:
         print(e.args[0])
         print(e)
@@ -143,13 +143,13 @@ def get_user(session: Session = Depends(get_db)):
     try:
         response = user_controller.get_user(session=session)
         response.result_msg = f'{response.result_msg}'
+    except HTTPException as e:
+        print(e.detail)
 
-    except TypeError as e:
-        print(e.args[0])
         session.rollback()
 
         response = base_model.DefaultModel()
-        common.error_response(response, e.args[0], f'{result_msg} 실패')
+        common.error_response(response, e.detail, f'{result_msg} 실패')
     except Exception as e:
         print(e.args[0])
         print(e)
