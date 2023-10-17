@@ -1,6 +1,6 @@
 from typing_extensions import Annotated
 from fastapi.security import OAuth2PasswordBearer
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, HTTPException, status
 
 from database.models import User
 from database.database import get_db
@@ -15,19 +15,19 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     print(token)
     session = next(get_db())
     user = session.query(User).filter(User.login_id == token).first()
+    session.close()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
+            detail='Invalid authentication credentials',
+            headers={'WWW-Authenticate': 'Bearer'},
         )
-    session.close()
     return user
 
 
 async def get_current_active_user(current_user: Annotated[User, Depends(get_current_user)]):
     if current_user is None:
-        raise HTTPException(status_code=400, detail="Inactive user")
+        raise HTTPException(status_code=400, detail='Inactive user')
     return current_user
 
 

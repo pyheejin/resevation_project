@@ -1,15 +1,10 @@
 import uvicorn
 
-from typing_extensions import Annotated
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import FastAPI
 from starlette.routing import Mount
 from starlette.applications import Starlette
 from starlette.middleware.cors import CORSMiddleware
 
-from config import common
-from database.models import User
-from database.database import get_db
 from router import admin_api, api, webpage
 
 
@@ -19,10 +14,11 @@ api_tags_metadata = [
         'description': '유저'
     },
 ]
+
 admin_api_tags_metadata = [
     {
-        'name': 'user',
-        'description': '유저'
+        'name': 'product',
+        'description': '상품'
     },
 ]
 
