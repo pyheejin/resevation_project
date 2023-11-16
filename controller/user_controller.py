@@ -62,7 +62,7 @@ def post_user_login(request, session, response_cookie):
     jwt = JWT()
 
     # 쿠키 유효시간
-    refresh_expires = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d %T')
+    refresh_expires = (datetime.now() + timedelta(minutes=10)).strftime('%Y-%m-%d %T')
 
     access_token = jwt.create_access_token(payload)
     refresh_token = jwt.create_refresh_token(payload)
@@ -97,9 +97,9 @@ def post_user_logout(session, request, response_cookie):
     return response
 
 
-def get_user(session):
+def get_user(session, g):
     response = DefaultModel()
 
-    users = session.query(User).all()
+    users = session.query(User).filter(User.status == constant.STATUS_ACTIVE).all()
     response.result_data = user_list_schema.dump(users)
     return response

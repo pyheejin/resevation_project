@@ -137,11 +137,13 @@ def post_user_logout(request: Request,
     return response
 
 
-@router.get('', tags=['user'], summary='유저 목록', dependencies=[Depends(common.get_current_active_user)])
-def get_user(session: Session = Depends(get_db)):
+@router.get('', tags=['user'], summary='유저 목록', dependencies=[Depends(common.get_access_token)])
+def get_user(session: Session = Depends(get_db),
+             g: User = Depends(common.get_access_token)):
     result_msg = '유저 목록'
     try:
-        response = user_controller.get_user(session=session)
+        response = user_controller.get_user(session=session,
+                                            g=g)
         response.result_msg = f'{response.result_msg}'
     except HTTPException as e:
         print(e.detail)

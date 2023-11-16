@@ -1,10 +1,12 @@
 import uvicorn
 
-from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+from fastapi import FastAPI, Request, HTTPException
 from starlette.routing import Mount
 from starlette.applications import Starlette
 from starlette.middleware.cors import CORSMiddleware
 
+from config.jwt_handler import JWT
 from router import admin_api, api, webpage
 
 
@@ -70,6 +72,25 @@ app.add_middleware(
     allow_methods=['*'],
     allow_headers=['*'],
 )
+
+
+@app.middleware('http')
+async def app_middleware(request: Request, call_next):
+    response = await call_next(request)
+
+    token = request.headers.get('Authorization', None)
+    if token is not None:
+        jwt_data = JWT()
+        try:
+            jwt_data.verify_token(token.split(' ')[1])
+        except HTTPException as e:
+            result = {
+                'result_code': e.detail,
+                'result_msg': e.status_code,
+                'result_data': None,
+            }
+            response = JSONResponse(status_code=e.status_code, content=result)
+    return response
 
 
 if __name__ == '__main__':
