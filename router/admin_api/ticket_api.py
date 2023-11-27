@@ -7,27 +7,29 @@ from config import common
 from database import base_model
 from database.database import *
 from database.models import User
-from admin_controller import product_controller
+from admin_controller import ticket_controller
 
 
 router = APIRouter(
-    prefix='/product',
+    prefix='/ticket',
     dependencies=[Depends(common.get_access_token)]
 )
 
 
-class PostProductModel(BaseModel):
+class PostTicketModel(BaseModel):
+    cost: int
+    price: int
     title: str
     description: str
 
 
-@router.get('', tags=['product'], summary='상품 목록')
-def get_product(session: Session = Depends(get_db),
-                user_id: Optional[int] = None):
-    result_msg = '상품 목록'
+@router.get('', tags=['ticket'], summary='티켓 목록')
+def get_ticket(session: Session = Depends(get_db),
+               user_id: Optional[int] = None):
+    result_msg = '티켓 목록'
     try:
-        response = product_controller.get_product(session=session,
-                                                  user_id=user_id)
+        response = ticket_controller.get_ticket(session=session,
+                                                user_id=user_id)
         response.result_msg = f'{response.result_msg}'
     except HTTPException as e:
         print(e.detail)
@@ -53,15 +55,15 @@ def get_product(session: Session = Depends(get_db),
     return response
 
 
-@router.post('', tags=['product'], summary='상품 등록')
-def post_product(request: PostProductModel,
-                 session: Session = Depends(get_db),
-                 g: User = Depends(common.get_access_token)):
-    result_msg = '상품 등록'
+@router.post('', tags=['ticket'], summary='티켓 등록')
+def post_ticket(request: PostTicketModel,
+                session: Session = Depends(get_db),
+                g: User = Depends(common.get_access_token)):
+    result_msg = '티켓 등록'
     try:
-        response = product_controller.post_product(request=request,
-                                                   session=session,
-                                                   g=g)
+        response = ticket_controller.post_ticket(request=request,
+                                                 session=session,
+                                                 g=g)
         response.result_msg = f'{response.result_msg}'
     except HTTPException as e:
         print(e.detail)
@@ -87,13 +89,13 @@ def post_product(request: PostProductModel,
     return response
 
 
-@router.get('/{product_id}', tags=['product'], summary='상품 상세')
-def get_product_detail(product_id: int,
-                       session: Session = Depends(get_db)):
-    result_msg = '상품 상세'
+@router.get('/{ticket_id}', tags=['ticket'], summary='티켓 상세')
+def get_ticket_detail(ticket_id: int,
+                      session: Session = Depends(get_db)):
+    result_msg = '티켓 상세'
     try:
-        response = product_controller.get_product_detail(product_id=product_id,
-                                                         session=session)
+        response = ticket_controller.get_ticket_detail(ticket_id=ticket_id,
+                                                       session=session)
         response.result_msg = f'{response.result_msg}'
     except HTTPException as e:
         print(e.detail)
@@ -119,15 +121,15 @@ def get_product_detail(product_id: int,
     return response
 
 
-@router.put('/{product_id}', tags=['product'], summary='상품 수정')
-def put_product_detail(product_id: int,
-                       request: PostProductModel,
-                       session: Session = Depends(get_db)):
-    result_msg = '상품 수정'
+@router.put('/{ticket_id}', tags=['ticket'], summary='티켓 수정')
+def put_ticket_detail(ticket_id: int,
+                      request: PostTicketModel,
+                      session: Session = Depends(get_db)):
+    result_msg = '티켓 수정'
     try:
-        response = product_controller.put_product_detail(product_id=product_id,
-                                                         request=request,
-                                                         session=session)
+        response = ticket_controller.put_ticket_detail(ticket_id=ticket_id,
+                                                       request=request,
+                                                       session=session)
         response.result_msg = f'{response.result_msg}'
     except HTTPException as e:
         print(e.detail)
@@ -153,13 +155,13 @@ def put_product_detail(product_id: int,
     return response
 
 
-@router.delete('/{product_id}', tags=['product'], summary='상품 삭제')
-def delete_product_detail(product_id: int,
-                          session: Session = Depends(get_db)):
-    result_msg = '상품 삭제'
+@router.delete('/{ticket_id}', tags=['ticket'], summary='티켓 삭제')
+def delete_ticket_detail(ticket_id: int,
+                         session: Session = Depends(get_db)):
+    result_msg = '티켓 삭제'
     try:
-        response = product_controller.delete_product_detail(product_id=product_id,
-                                                            session=session)
+        response = ticket_controller.delete_ticket_detail(ticket_id=ticket_id,
+                                                          session=session)
         response.result_msg = f'{response.result_msg}'
     except HTTPException as e:
         print(e.detail)

@@ -12,6 +12,10 @@ from router import admin_api, api, webpage
 
 api_tags_metadata = [
     {
+        'name': 'product',
+        'description': '상품'
+    },
+    {
         'name': 'user',
         'description': '유저'
     },
@@ -21,6 +25,22 @@ admin_api_tags_metadata = [
     {
         'name': 'product',
         'description': '상품'
+    },
+    {
+        'name': 'qna',
+        'description': '문의'
+    },
+    {
+        'name': 'review',
+        'description': '리뷰'
+    },
+    {
+        'name': 'ticket',
+        'description': '티켓'
+    },
+    {
+        'name': 'user',
+        'description': '유저'
     },
 ]
 
@@ -72,25 +92,6 @@ app.add_middleware(
     allow_methods=['*'],
     allow_headers=['*'],
 )
-
-
-@app.middleware('http')
-async def app_middleware(request: Request, call_next):
-    response = await call_next(request)
-
-    token = request.headers.get('Authorization', None)
-    if token is not None:
-        jwt_data = JWT()
-        try:
-            jwt_data.verify_token(token.split(' ')[1])
-        except HTTPException as e:
-            result = {
-                'result_code': e.detail,
-                'result_msg': e.status_code,
-                'result_data': None,
-            }
-            response = JSONResponse(status_code=e.status_code, content=result)
-    return response
 
 
 if __name__ == '__main__':

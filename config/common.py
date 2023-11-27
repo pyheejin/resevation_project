@@ -1,43 +1,20 @@
-from typing_extensions import Annotated
-from fastapi.security import OAuth2PasswordBearer, HTTPAuthorizationCredentials, HTTPBearer
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException
+from fastapi.responses import JSONResponse
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from database.models import User
-from database.database import get_db
-from config.constant import ERROR_DIC
+from config.constant import *
+from config.jwt_handler import JWT
 from database.base_model import DefaultModel
-
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
-
-
-async def get_current_user(token: str = Depends(oauth2_scheme)):
-    session = next(get_db())
-    user = session.query(User).filter(User.login_id == token).first()
-    session.close()
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Invalid authentication credentials',
-            headers={'WWW-Authenticate': 'Bearer'},
-        )
-    return user
 
 
 def get_access_token(token: HTTPAuthorizationCredentials = Depends(HTTPBearer(auto_error=False))):
     if token is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='HTTP_401_UNAUTHORIZED',
-            headers={'WWW-Authenticate': 'Bearer'},
-        )
-    return token.credentials
-
-
-async def get_current_active_user(current_user: Annotated[User, Depends(get_current_user)]):
-    if current_user is None:
-        raise HTTPException(status_code=400, detail='Inactive user')
-    return current_user
+        raise HTTPException(status_code=ERROR_DIC[ERROR_UNAUTHORIZED][0],
+                            detail=ERROR_DIC[ERROR_UNAUTHORIZED][1])
+    else:
+        jwt_data = JWT()
+        user = jwt_data.verify_token(token.credentials)
+        return user
 
 
 def error_response(response: DefaultModel, error_msg: str, result_msg: str):

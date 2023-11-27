@@ -20,6 +20,7 @@ ERROR_NOT_IMPLEMENTED = 'not_implemented'
 ERROR_DATA_NOT_EXIST = 'data_not_exist'
 ERROR_USER_NOT_EXIST = 'user_not_exist'
 ERROR_USER_EXIST = 'user_already_exist'
+ERROR_DATA_EXIST = 'data_already_exist'
 ERROR_NEED_MORE_POINT = 'need_more_point'
 ERROR_OTHER_DEVICE_LOGGED_IN = 'other_device_logged_in'
 ERROR_NEED_ESTATE_AGENT_INFORMATION = 'need_estate_agent_information'
@@ -43,6 +44,7 @@ ERROR_DIC = {
     ERROR_DATA_NOT_EXIST: (204, '데이터가 존재하지 않습니다'),
     ERROR_USER_NOT_EXIST: (210, '해당 전화번호로 가입하신 계정이 존재하지 않습니다.'),
     ERROR_USER_EXIST: (211, '중복된 아이디 입니다.'),
+    ERROR_DATA_EXIST: (212, '이미 존재하는 데이터 입니다.'),
     ERROR_NEED_MORE_POINT: (300, '포인트가 부족합니다.'),
     ERROR_OTHER_DEVICE_LOGGED_IN: (304, '다른 기기에서 로그인하였습니다.'),
     ERROR_OVER_TIME_AUTHORITY: (230, '인증 시간이 초과된 인증번호 입니다.'),

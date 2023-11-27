@@ -51,7 +51,6 @@ class ProductListSchema(Schema):
     description = fields.String()
     created_at = fields.DateTime('%Y-%m-%d %H:%M:%S')
     updated_at = fields.DateTime('%Y-%m-%d %H:%M:%S')
-    user = fields.Nested(UserListSchema(), many=False)
 
 
 product_list_schema = ProductListSchema(many=True)
@@ -64,7 +63,6 @@ class ProductDetailSchema(Schema):
     description = fields.String()
     created_at = fields.DateTime('%Y-%m-%d %H:%M:%S')
     updated_at = fields.DateTime('%Y-%m-%d %H:%M:%S')
-    user = fields.Nested(UserListSchema(), many=False)
 
 
 product_detail_schema = ProductDetailSchema(many=False)

@@ -1,3 +1,5 @@
+import contextlib
+
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -21,6 +23,15 @@ naming_convention = {
     "pk": "pk_%(table_name)s"
 }
 Base.metadata = MetaData(naming_convention=naming_convention)
+
+
+@contextlib.contextmanager
+def get_db_context():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 def get_db():

@@ -26,6 +26,7 @@ class PostUserJoinModel(BaseModel):
     login_id: str = 'heejin'
     password: str = 'heejin'
     name: Optional[str] = 'heejin'
+    nickname: Optional[str] = 'heejin'
     phone: Optional[str] = '010-0000-0000'
     email: Optional[str] = 'heejin@heejin.com'
 
@@ -53,26 +54,22 @@ def post_user_join(request: PostUserJoinModel,
         response = base_model.DefaultModel()
         common.error_response(response, e.args[0], f'{result_msg} 실패')
     else:
-        session.commit()
-
         if response is None:
             response = base_model.DefaultModel()
         if response.result_msg is not None:
             response.result_msg = result_msg + ' 성공'
     finally:
-        session.close()
+        session.commit()
     return response
 
 
 
 @router.post('/login', tags=['user'], summary='로그인')
 def post_user_login(request: PostUserLoginModel,
-                    response_cookie: Response,
                     session: Session = Depends(get_db)):
     result_msg = '로그인'
     try:
         response = user_controller.post_user_login(request=request,
-                                                   response_cookie=response_cookie,
                                                    session=session)
         response.result_msg = f'{response.result_msg}'
     except HTTPException as e:
@@ -84,25 +81,22 @@ def post_user_login(request: PostUserLoginModel,
         common.error_response(response, e.detail, f'{result_msg} 실패')
     except Exception as e:
         print(e.args[0])
-        print(e)
 
         session.rollback()
 
         response = base_model.DefaultModel()
         common.error_response(response, e.args[0], f'{result_msg} 실패')
     else:
-        session.commit()
-
         if response is None:
             response = base_model.DefaultModel()
         if response.result_msg is not None:
             response.result_msg = result_msg + ' 성공'
     finally:
-        session.close()
+        session.commit()
     return response
 
 
-@router.post('/logout', tags=['user'], summary='로그아웃')
+@router.post('/logout', tags=['user'], summary='로그아웃', dependencies=[Depends(common.get_access_token)])
 def post_user_logout(request: Request,
                      session: Session = Depends(get_db)):
     result_msg = '로그아웃'
@@ -119,30 +113,29 @@ def post_user_logout(request: Request,
         common.error_response(response, e.detail, f'{result_msg} 실패')
     except Exception as e:
         print(e.args[0])
-        print(e)
 
         session.rollback()
 
         response = base_model.DefaultModel()
         common.error_response(response, e.args[0], f'{result_msg} 실패')
     else:
-        session.commit()
-
         if response is None:
             response = base_model.DefaultModel()
         if response.result_msg is not None:
             response.result_msg = result_msg + ' 성공'
     finally:
-        session.close()
+        session.commit()
     return response
 
 
 @router.get('', tags=['user'], summary='유저 목록', dependencies=[Depends(common.get_access_token)])
 def get_user(session: Session = Depends(get_db),
+             type: Optional[int] = None,
              g: User = Depends(common.get_access_token)):
     result_msg = '유저 목록'
     try:
         response = user_controller.get_user(session=session,
+                                            type=type,
                                             g=g)
         response.result_msg = f'{response.result_msg}'
     except HTTPException as e:
@@ -154,19 +147,16 @@ def get_user(session: Session = Depends(get_db),
         common.error_response(response, e.detail, f'{result_msg} 실패')
     except Exception as e:
         print(e.args[0])
-        print(e)
 
         session.rollback()
 
         response = base_model.DefaultModel()
         common.error_response(response, e.args[0], f'{result_msg} 실패')
     else:
-        session.commit()
-
         if response is None:
             response = base_model.DefaultModel()
         if response.result_msg is not None:
             response.result_msg = result_msg + ' 성공'
     finally:
-        session.close()
+        session.commit()
     return response
