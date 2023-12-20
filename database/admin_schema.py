@@ -13,10 +13,13 @@ class LoginSchema(Schema):
     id = fields.Int()
     status = fields.Int()
     type = fields.Int()
-    name = fields.String()
-    phone = fields.String()
     login_id = fields.String()
+    name = fields.String()
+    nickname = fields.String()
     email = fields.String()
+    phone = fields.String()
+    access_token = fields.String()
+    refresh_token = fields.String()
 
 
 login_schema = LoginSchema(many=False)

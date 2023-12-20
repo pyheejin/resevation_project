@@ -14,13 +14,16 @@ class User(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     status = Column(Integer, default=constant.STATUS_ACTIVE, comment='1:활성화, 0:비 활성화, -1:삭제')
-    type = Column(Integer, default=constant.USER_TYPE_CUSTOMER, comment='1:일반 유저, 50:판매자, 99:관리자')
+    type = Column(Integer, default=constant.USER_TYPE_CUSTOMER, comment='1:일반 유저, 50:강사, 99:관리자')
     login_id = Column(String(45), comment='아이디')
     password = Column(String(255), comment='비밀번호')
     name = Column(String(45), comment='이름')
     nickname = Column(String(45), comment='닉네임')
-    phone = Column(String(45), comment='전화 번호')
     email = Column(String(45), comment='이메일')
+    phone = Column(String(45), comment='전화 번호')
+    short_introduction = Column(String(45), comment='한 줄 소개')
+    introduction = Column(Text, comment='자기소개')
+    image_url = Column(String(255), comment='프로필 이미지')
     last_login_date = Column(DateTime, comment='최종 방문일')
     access_token = Column(Text, comment='Access Token')
     refresh_token = Column(Text, comment='Refresh Token')
@@ -37,8 +40,8 @@ class User(Base):
         self.password = cryptocode.encrypt(value, config.KEY)
 
 
-class Product(Base):
-    __tablename__ = 'product'
+class Course(Base):
+    __tablename__ = 'course'
 
     id = Column(Integer, primary_key=True, index=True)
     status = Column(Integer, default=constant.STATUS_ACTIVE, comment='1:활성화, 0:비 활성화, -1:삭제')
@@ -49,6 +52,21 @@ class Product(Base):
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     user = relationship('User')
+
+
+class CourseDetail(Base):
+    __tablename__ = 'course_detail'
+
+    id = Column(Integer, primary_key=True, index=True)
+    status = Column(Integer, default=constant.STATUS_ACTIVE, comment='1:활성화, 0:비 활성화, -1:삭제')
+    course_id = Column(Integer, ForeignKey('course.id'), comment='course id')
+    course_date = Column(DateTime, comment='수업일')
+    address = Column(String(45), comment='연습실 주소')
+    address_detail = Column(String(45), comment='연습실 상세 주소')
+    created_at = Column(DateTime, default=datetime.now)
+    updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+
+    course = relationship('Course')
 
 
 class Ticket(Base):
@@ -57,8 +75,7 @@ class Ticket(Base):
     id = Column(Integer, primary_key=True, index=True)
     status = Column(Integer, default=constant.STATUS_ACTIVE, comment='1:활성화, 0:비 활성화, -1:삭제')
     user_id = Column(Integer, ForeignKey('user.id'), comment='user id')
-    title = Column(String(45), comment='제목')
-    description = Column(Text, comment='내용')
+    count = Column(Integer, comment='회차')
     cost = Column(Integer, default=0, comment='원가')
     price = Column(Integer, default=0, comment='판매가')
     created_at = Column(DateTime, default=datetime.now)
@@ -67,20 +84,20 @@ class Ticket(Base):
     user = relationship('User')
 
 
-class TicketProduct(Base):
-    __tablename__ = 'ticket_product'
+class UserTicket(Base):
+    __tablename__ = 'user_ticket'
 
     id = Column(Integer, primary_key=True, index=True)
     status = Column(Integer, default=constant.STATUS_ACTIVE, comment='1:활성화, 0:비 활성화, -1:삭제')
     user_id = Column(Integer, ForeignKey('user.id'), comment='user id')
     ticket_id = Column(Integer, ForeignKey('ticket.id'), comment='ticket id')
-    product_id = Column(Integer, ForeignKey('product.id'), comment='product id')
+    course_id = Column(Integer, ForeignKey('course.id'), comment='course id')
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     user = relationship('User')
     ticket = relationship('Ticket')
-    product = relationship('Product')
+    course = relationship('Course')
 
 
 class Payment(Base):
@@ -106,13 +123,13 @@ class Review(Base):
     is_best = Column(Integer, default=constant.STATUS_INACTIVE, comment='1:베스트 리뷰')
     satisfaction = Column(Integer, default=constant.STATUS_INACTIVE, comment='만족도')
     user_id = Column(Integer, ForeignKey('user.id'), comment='user id')
-    product_id = Column(Integer, ForeignKey('product.id'), comment='product id')
+    course_id = Column(Integer, ForeignKey('course.id'), comment='course id')
     title = Column(String(45), comment='제목')
     description = Column(Text, comment='내용')
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
-    product = relationship('Product')
+    course = relationship('Course')
 
 
 class Qna(Base):
@@ -122,11 +139,11 @@ class Qna(Base):
     status = Column(Integer, default=constant.STATUS_ACTIVE, comment='1:활성화, 0:비 활성화, -1:삭제')
     is_reply = Column(Integer, default=constant.STATUS_INACTIVE, comment='1:답변완료')
     user_id = Column(Integer, ForeignKey('user.id'), comment='user id')
-    product_id = Column(Integer, ForeignKey('product.id'), comment='product id')
+    course_id = Column(Integer, ForeignKey('course.id'), comment='course id')
     question = Column(Text, comment='문의 내용')
     answer = Column(Text, comment='답변')
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     user = relationship('User')
-    product = relationship('Product')
+    course = relationship('Course')

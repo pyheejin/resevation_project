@@ -354,7 +354,6 @@ pip-selfcheck.json
 config/config.py
 *.pem
 *.db
-*.ini
 migrations
 static
 
