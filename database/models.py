@@ -48,10 +48,13 @@ class Course(Base):
     user_id = Column(Integer, ForeignKey('user.id'), comment='user id')
     title = Column(String(45), comment='제목')
     description = Column(Text, comment='내용')
+    count = Column(Integer, comment='수업 회차')
+    last_course_date = Column(DateTime, comment='마지막 수업일')
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     user = relationship('User')
+    course_detail = relationship('CourseDetail', back_populates='course')
 
 
 class CourseDetail(Base):
@@ -60,13 +63,14 @@ class CourseDetail(Base):
     id = Column(Integer, primary_key=True, index=True)
     status = Column(Integer, default=constant.STATUS_ACTIVE, comment='1:활성화, 0:비 활성화, -1:삭제')
     course_id = Column(Integer, ForeignKey('course.id'), comment='course id')
+    title = Column(String(45), comment='제목')
     course_date = Column(DateTime, comment='수업일')
     address = Column(String(45), comment='연습실 주소')
     address_detail = Column(String(45), comment='연습실 상세 주소')
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
-    course = relationship('Course')
+    course = relationship('Course', back_populates='course_detail')
 
 
 class Ticket(Base):

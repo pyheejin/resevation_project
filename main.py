@@ -12,8 +12,8 @@ from router import admin_api, api, webpage
 
 api_tags_metadata = [
     {
-        'name': 'product',
-        'description': '상품'
+        'name': 'course',
+        'description': '수업'
     },
     {
         'name': 'user',
@@ -23,8 +23,8 @@ api_tags_metadata = [
 
 admin_api_tags_metadata = [
     {
-        'name': 'product',
-        'description': '상품'
+        'name': 'course',
+        'description': '수업'
     },
     {
         'name': 'qna',

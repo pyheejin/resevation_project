@@ -2,26 +2,29 @@ from typing import Optional
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException, APIRouter
 
-from config import common
+from config import common, constant
 from database.database import *
 from database import base_model
-from database.models import User
-from controller import product_controller
+from controller import course_controller
 
 
 router = APIRouter(
-    prefix='/product',
+    prefix='/course',
     dependencies=[Depends(common.get_access_token)]
 )
 
 
-@router.get('', tags=['product'], summary='상품 목록')
-def get_product(session: Session = Depends(get_db),
-                user_id: Optional[int] = None):
-    result_msg = '상품 목록'
+@router.get('', tags=['course'], summary='수업 목록')
+def get_course(session: Session = Depends(get_db),
+               user_id: Optional[int] = None,
+               page: Optional[int] = constant.DEFAULT_PAGE,
+               page_size: Optional[int] = constant.DEFAULT_PAGE_SIZE):
+    result_msg = '수업 목록'
     try:
-        response = product_controller.get_product(session=session,
-                                                  user_id=user_id)
+        response = course_controller.get_course(session=session,
+                                                user_id=user_id,
+                                                page=page,
+                                                page_size=page_size)
         response.result_msg = f'{response.result_msg}'
     except HTTPException as e:
         print(e.detail)
@@ -47,13 +50,13 @@ def get_product(session: Session = Depends(get_db),
     return response
 
 
-@router.get('/{product_id}', tags=['product'], summary='상품 상세')
-def get_product_detail(product_id: int,
-                       session: Session = Depends(get_db)):
-    result_msg = '상품 상세'
+@router.get('/{course_id}', tags=['course'], summary='수업 상세')
+def get_course_detail(course_id: int,
+                      session: Session = Depends(get_db)):
+    result_msg = '수업 상세'
     try:
-        response = product_controller.get_product_detail(product_id=product_id,
-                                                         session=session)
+        response = course_controller.get_course_detail(course_id=course_id,
+                                                       session=session)
         response.result_msg = f'{response.result_msg}'
     except HTTPException as e:
         print(e.detail)

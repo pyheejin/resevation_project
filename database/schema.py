@@ -54,7 +54,7 @@ class ProductListSchema(Schema):
     user = fields.Nested(UserListSchema(), many=False)
 
 
-product_list_schema = ProductListSchema(many=True)
+course_list_schema = ProductListSchema(many=True)
 
 
 class ProductDetailSchema(Schema):
@@ -67,7 +67,7 @@ class ProductDetailSchema(Schema):
     user = fields.Nested(UserListSchema(), many=False)
 
 
-product_detail_schema = ProductDetailSchema(many=False)
+course_detail_schema = ProductDetailSchema(many=False)
 
 
 class TicketListSchema(Schema):
@@ -103,7 +103,7 @@ class QnaListSchema(Schema):
     status = fields.Int()
     is_reply = fields.Int()
     user_id = fields.Int()
-    product_id = fields.Int()
+    course_id = fields.Int()
     question = fields.String()
     created_at = fields.DateTime('%Y-%m-%d %H:%M:%S')
     updated_at = fields.DateTime('%Y-%m-%d %H:%M:%S')
@@ -117,7 +117,7 @@ class QnaDetailSchema(Schema):
     status = fields.Int()
     is_reply = fields.Int()
     user_id = fields.Int()
-    product_id = fields.Int()
+    course_id = fields.Int()
     question = fields.String()
     answer = fields.String()
     created_at = fields.DateTime('%Y-%m-%d %H:%M:%S')
@@ -133,7 +133,7 @@ class ReviewListSchema(Schema):
     is_best = fields.Int()
     satisfaction = fields.Int()
     user_id = fields.Int()
-    product_id = fields.Int()
+    course_id = fields.Int()
     title = fields.String()
     created_at = fields.DateTime('%Y-%m-%d %H:%M:%S')
     updated_at = fields.DateTime('%Y-%m-%d %H:%M:%S')
@@ -148,7 +148,7 @@ class ReviewDetailSchema(Schema):
     is_best = fields.Int()
     satisfaction = fields.Int()
     user_id = fields.Int()
-    product_id = fields.Int()
+    course_id = fields.Int()
     title = fields.String()
     description = fields.String()
     created_at = fields.DateTime('%Y-%m-%d %H:%M:%S')

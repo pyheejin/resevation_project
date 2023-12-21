@@ -48,8 +48,8 @@ class PostUserJoinModel(BaseModel):
 
 
 class PostUserLoginModel(BaseModel):
-    login_id: str
-    password: str
+    login_id: str = 'admin'
+    password: str = 'admin'
 
 
 class PutUserModel(BaseModel):
