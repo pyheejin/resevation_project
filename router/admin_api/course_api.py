@@ -31,14 +31,12 @@ class PostCourseModel(BaseModel):
 
 @router.get('', tags=['course'], summary='수업 목록')
 def get_course(session: Session = Depends(get_db),
-               user_id: Optional[int] = None,
-               status: Optional[int] = None,
+               status: Optional[int] = constant.STATUS_ACTIVE,
                page: Optional[int] = constant.DEFAULT_PAGE,
                page_size: Optional[int] = constant.DEFAULT_PAGE_SIZE):
     result_msg = '수업 목록'
     try:
         response = course_controller.get_course(session=session,
-                                                user_id=user_id,
                                                 status=status,
                                                 page=page,
                                                 page_size=page_size)

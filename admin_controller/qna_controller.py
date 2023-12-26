@@ -1,4 +1,5 @@
 from fastapi import HTTPException
+from sqlalchemy.orm import contains_eager
 
 from database.models import *
 from database.admin_schema import *
@@ -9,7 +10,11 @@ from database.base_model import DefaultModel
 def get_qna(session):
     response = DefaultModel()
 
-    qnas = session.query(Qna).filter(Qna.status >= constant.STATUS_INACTIVE).all()
+    qnas = session.query(Qna).outerjoin(User, User.id == Qna.user_id
+                            ).outerjoin(Course, Course.id == Qna.course_id
+                            ).filter(Qna.status >= constant.STATUS_INACTIVE
+                            ).options(contains_eager(Qna.user),
+                                      contains_eager(Qna.course)).all()
 
     response.result_data = {
         'qnas': qna_list_schema.dump(qnas)
@@ -20,8 +25,13 @@ def get_qna(session):
 def get_qna_detail(qna_id, session):
     response = DefaultModel()
 
-    qna = session.query(Qna).filter(Qna.id == qna_id,
-                                    Qna.status >= constant.STATUS_INACTIVE).first()
+    qna = session.query(Qna).outerjoin(User, User.id == Qna.user_id
+                            ).outerjoin(Course, Course.id == Qna.course_id
+                            ).filter(Qna.id == qna_id,
+                                     Qna.status >= constant.STATUS_INACTIVE
+                            ).options(contains_eager(Qna.user),
+                                      contains_eager(Qna.course)).first()
+
     if qna is None:
         raise HTTPException(detail=ERROR_DIC[constant.ERROR_DATA_NOT_EXIST][1],
                             status_code=ERROR_DIC[constant.ERROR_DATA_NOT_EXIST][0])

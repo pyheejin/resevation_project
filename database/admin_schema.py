@@ -86,15 +86,18 @@ class CourseSchema(Schema):
 course_schema = CourseSchema(many=False)
 
 
+class CourseNameSchema(Schema):
+    id = fields.Int()
+    title = fields.String()
+
+
 class TicketListSchema(Schema):
     id = fields.Int()
     status = fields.Int()
+    count = fields.Int()
     cost = fields.Int()
     price = fields.Int()
-    title = fields.String()
-    description = fields.String()
     created_at = fields.DateTime('%Y-%m-%d %H:%M:%S')
-    updated_at = fields.DateTime('%Y-%m-%d %H:%M:%S')
 
 
 ticket_list_schema = TicketListSchema(many=True)
@@ -103,10 +106,9 @@ ticket_list_schema = TicketListSchema(many=True)
 class TicketDetailSchema(Schema):
     id = fields.Int()
     status = fields.Int()
+    count = fields.Int()
     cost = fields.Int()
     price = fields.Int()
-    title = fields.String()
-    description = fields.String()
     created_at = fields.DateTime('%Y-%m-%d %H:%M:%S')
     updated_at = fields.DateTime('%Y-%m-%d %H:%M:%S')
 
@@ -118,11 +120,11 @@ class QnaListSchema(Schema):
     id = fields.Int()
     status = fields.Int()
     is_reply = fields.Int()
-    user_id = fields.Int()
-    course_id = fields.Int()
     question = fields.String()
     created_at = fields.DateTime('%Y-%m-%d %H:%M:%S')
-    updated_at = fields.DateTime('%Y-%m-%d %H:%M:%S')
+
+    course = fields.Nested(CourseNameSchema(), many=False)
+    user = fields.Nested(UserListSchema(), many=False)
 
 
 qna_list_schema = QnaListSchema(many=True)

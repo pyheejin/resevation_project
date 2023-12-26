@@ -9,20 +9,16 @@ from config.constant import ERROR_DIC
 from database.base_model import DefaultModel
 
 
-def get_course(session, user_id, status, page, page_size):
+def get_course(session, status, page, page_size):
     response = DefaultModel()
 
     filter_list = []
-    if user_id is not None:
-        filter_list.append(Course.user_id == user_id)
-
     if status is not None:
         filter_list.append(Course.status == status)
 
     courses = session.query(Course).outerjoin(CourseDetail, and_(Course.id == CourseDetail.course_id,
                                                                  CourseDetail.status == constant.STATUS_ACTIVE)
-                                ).filter(Course.status == constant.STATUS_ACTIVE,
-                                         *filter_list
+                                ).filter(*filter_list
                                 ).options(contains_eager(Course.course_detail)
                                 ).offset(page_size * (page - 1)).limit(page_size).all()
     response.result_data = {

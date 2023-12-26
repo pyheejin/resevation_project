@@ -6,15 +6,14 @@ from config.constant import ERROR_DIC
 from database.base_model import DefaultModel
 
 
-def get_ticket(session, user_id):
+def get_ticket(session, status):
     response = DefaultModel()
 
     filter_list = []
-    if user_id is not None:
-        filter_list.append(Ticket.user_id == user_id)
+    if status is not None:
+        filter_list.append(Ticket.status == status)
 
-    tickets = session.query(Ticket).filter(Ticket.status == constant.STATUS_ACTIVE,
-                                           *filter_list).all()
+    tickets = session.query(Ticket).filter(*filter_list).all()
     response.result_data = {
         'tickets': ticket_list_schema.dump(tickets)
     }
@@ -28,14 +27,7 @@ def post_ticket(request, session, g):
 
     cost = request.cost
     price = request.price
-    title = request.title
-    description = request.description
-
-    ticket_check = session.query(Ticket).filter(Ticket.title == title,
-                                                Ticket.status >= constant.STATUS_INACTIVE).first()
-    if ticket_check is not None:
-        raise HTTPException(detail=ERROR_DIC[constant.ERROR_DATA_EXIST][1],
-                            status_code=ERROR_DIC[constant.ERROR_DATA_EXIST][0])
+    count = request.count
 
     ticket = Ticket()
     session.add(ticket)
@@ -44,8 +36,7 @@ def post_ticket(request, session, g):
     ticket.user_id = user_id
     ticket.cost = cost
     ticket.price = price
-    ticket.title = title
-    ticket.description = description
+    ticket.count = count
 
     response.result_data = {
         'ticket': ticket_detail_schema.dump(ticket)
@@ -79,20 +70,11 @@ def put_ticket_detail(ticket_id, request, session):
 
     cost = request.cost
     price = request.price
-    title = request.title
-    description = request.description
-
-    ticket_check = session.query(Ticket).filter(Ticket.title == title,
-                                                Ticket.title != ticket.title,
-                                                Ticket.status >= constant.STATUS_INACTIVE).first()
-    if ticket_check is not None:
-        raise HTTPException(detail=ERROR_DIC[constant.ERROR_DATA_EXIST][1],
-                            status_code=ERROR_DIC[constant.ERROR_DATA_EXIST][0])
+    count = request.count
 
     ticket.cost = cost
     ticket.price = price
-    ticket.title = title
-    ticket.description = description
+    ticket.count = count
 
     response.result_data = {
         'ticket': ticket_detail_schema.dump(ticket)

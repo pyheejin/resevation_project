@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException, APIRouter
 
-from config import common
+from config import common, constant
 from database import base_model
 from database.database import *
 from database.models import User
@@ -19,17 +19,16 @@ router = APIRouter(
 class PostTicketModel(BaseModel):
     cost: int
     price: int
-    title: str
-    description: str
+    count: int
 
 
 @router.get('', tags=['ticket'], summary='티켓 목록')
 def get_ticket(session: Session = Depends(get_db),
-               user_id: Optional[int] = None):
+               status: Optional[int] = constant.STATUS_ACTIVE):
     result_msg = '티켓 목록'
     try:
         response = ticket_controller.get_ticket(session=session,
-                                                user_id=user_id)
+                                                status=status)
         response.result_msg = f'{response.result_msg}'
     except HTTPException as e:
         print(e.detail)
