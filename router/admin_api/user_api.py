@@ -3,9 +3,10 @@ from typing import Optional, List
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException, APIRouter, Request, Form, File, UploadFile
 
-from config import common
+from config import common, constant
 from database import base_model
 from database.database import *
+from database.models import User
 from admin_controller import user_controller
 
 
@@ -126,10 +127,20 @@ def post_user_login(request: PostUserLoginModel,
 
 
 @router.get('', tags=['user'], summary='유저 목록', dependencies=[Depends(common.get_access_token)])
-def get_user(session: Session = Depends(get_db)):
+def get_user(session: Session = Depends(get_db),
+             g: User = Depends(common.get_access_token),
+             user_name: Optional[str] = None,
+             course_name: Optional[str] = None,
+             page: Optional[int] = constant.DEFAULT_PAGE,
+             page_size: Optional[int] = constant.DEFAULT_PAGE_SIZE):
     result_msg = '유저 목록'
     try:
-        response = user_controller.get_user(session=session)
+        response = user_controller.get_user(session=session,
+                                            g=g,
+                                            user_name=user_name,
+                                            course_name=course_name,
+                                            page=page,
+                                            page_size=page_size)
         response.result_msg = f'{response.result_msg}'
     except HTTPException as e:
         print(e.detail)

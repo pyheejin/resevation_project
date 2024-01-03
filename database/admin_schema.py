@@ -25,14 +25,6 @@ class LoginSchema(Schema):
 login_schema = LoginSchema(many=False)
 
 
-class UserListSchema(Schema):
-    id = fields.Int()
-    name = fields.String()
-
-
-user_list_schema = UserListSchema(many=True)
-
-
 class UserDetailSchema(Schema):
     id = fields.Int()
     status = fields.Int()
@@ -91,6 +83,11 @@ class CourseNameSchema(Schema):
     title = fields.String()
 
 
+class TicketNameSchema(Schema):
+    id = fields.Int()
+    count = fields.Int()
+
+
 class TicketListSchema(Schema):
     id = fields.Int()
     status = fields.Int()
@@ -114,6 +111,25 @@ class TicketDetailSchema(Schema):
 
 
 ticket_detail_schema = TicketDetailSchema(many=False)
+
+
+class UserTicketListSchema(Schema):
+    id = fields.Int()
+    remain_count = fields.Int()
+    created_at = fields.DateTime('%Y-%m-%d %H:%M:%S')
+
+    course = fields.Nested(CourseNameSchema(), many=False)
+    ticket = fields.Nested(TicketNameSchema(), many=False)
+
+
+class UserListSchema(Schema):
+    id = fields.Int()
+    name = fields.String()
+
+    user_ticket = fields.Nested(UserTicketListSchema(), many=True)
+
+
+user_list_schema = UserListSchema(many=True)
 
 
 class QnaListSchema(Schema):

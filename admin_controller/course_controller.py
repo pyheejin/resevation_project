@@ -50,15 +50,22 @@ def post_course(request, session, g):
     course.title = title
     course.description = description
 
-    for detail in request.course_detail:
+    for idx, detail in enumerate(request.course_detail):
         course_detail = CourseDetail()
         session.add(course_detail)
         session.flush()
 
+        course_date = datetime.strptime(detail.course_date, '%Y-%m-%d %H:%M')
+
         course_detail.course_id = course.id
-        course_detail.course_date = detail.course_date
+        course_detail.title = detail.title
+        course_detail.course_date = course_date
+        # todo 주소 open api로 조회하면 좋을 것 같음
         course_detail.address = detail.address
         course_detail.address_detail = detail.address_detail
+
+        if len(request.course_detail) == idx + 1:
+            course.last_course_date = course_date
 
     response.result_data = {
         'course': course_schema.dump(course)

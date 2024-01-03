@@ -2,6 +2,8 @@ import os
 
 from PIL import Image
 from io import BytesIO
+from sqlalchemy import and_, or_
+from sqlalchemy.orm import contains_eager
 from fastapi import HTTPException, UploadFile
 
 from database.models import *
@@ -35,6 +37,7 @@ def post_user_join(request, session):
     session.add(user)
     session.flush()
 
+    user.type = constant.USER_TYPE_SELLER
     user.login_id = login_id
     user._password = password
     user.name = name
@@ -126,10 +129,32 @@ def post_user_login(request, session):
     return response
 
 
-def get_user(session):
+def get_user(session, g, user_name, course_name, page, page_size):
+    """
+    로그인 한 강사의 티켓을 구매한 유저만 표시 되어야 함
+    """
     response = DefaultModel()
 
-    users = session.query(User).filter(User.status >= constant.STATUS_INACTIVE).all()
+    filter_list = []
+    if user_name is not None:
+        filter_list.append(or_(User.name.like(f'%{user_name}%'),
+                               User.nickname.like(f'%{user_name}%')))
+
+    if course_name is not None:
+        filter_list.append(Course.title.like(f'%{course_name}%'))
+
+    user_id = g.result_data.get('user', None).get('id', None)
+    users = session.query(User).outerjoin(UserTicket, and_(UserTicket.user_id == User.id,
+                                                           UserTicket.status >= constant.STATUS_INACTIVE)
+                                ).outerjoin(Ticket, Ticket.id == UserTicket.ticket_id
+                                ).outerjoin(Course, Course.id == UserTicket.course_id
+                                ).filter(User.status >= constant.STATUS_INACTIVE,
+                                         Ticket.user_id == user_id,
+                                         *filter_list
+                                ).options(contains_eager(User.user_ticket),
+                                          contains_eager(User.user_ticket).contains_eager(UserTicket.ticket),
+                                          contains_eager(User.user_ticket).contains_eager(UserTicket.course),
+                                ).offset(page_size * (page - 1)).limit(page_size).all()
 
     response.result_data = {
         'users': user_list_schema.dump(users)

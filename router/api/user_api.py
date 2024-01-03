@@ -23,6 +23,7 @@ class PostUserLoginModel(BaseModel):
 
 
 class PostUserJoinModel(BaseModel):
+    type: int = constant.USER_TYPE_CUSTOMER
     login_id: str = 'heejin'
     password: str = 'heejin'
     name: Optional[str] = 'heejin'

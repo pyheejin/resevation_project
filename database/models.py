@@ -30,6 +30,8 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
+    user_ticket = relationship('UserTicket', back_populates='user')
+
     # 부분 암호화
     @hybrid_property
     def _password(self):
@@ -54,6 +56,7 @@ class Course(Base):
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     user = relationship('User')
+    ticket = relationship('UserTicket', back_populates='course')
     course_detail = relationship('CourseDetail', back_populates='course')
 
 
@@ -86,22 +89,24 @@ class Ticket(Base):
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     user = relationship('User')
+    user_ticket = relationship('UserTicket', back_populates='ticket')
 
 
 class UserTicket(Base):
     __tablename__ = 'user_ticket'
 
     id = Column(Integer, primary_key=True, index=True)
-    status = Column(Integer, default=constant.STATUS_ACTIVE, comment='1:활성화, 0:비 활성화, -1:삭제')
+    status = Column(Integer, default=constant.STATUS_ACTIVE, comment='1:사용, 0:미사용, -1:삭제')
     user_id = Column(Integer, ForeignKey('user.id'), comment='user id')
     ticket_id = Column(Integer, ForeignKey('ticket.id'), comment='ticket id')
     course_id = Column(Integer, ForeignKey('course.id'), comment='course id')
+    remain_count = Column(Integer, comment='잔여 회차')
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
-    user = relationship('User')
-    ticket = relationship('Ticket')
-    course = relationship('Course')
+    user = relationship('User', back_populates='user_ticket')
+    ticket = relationship('Ticket', back_populates='user_ticket')
+    course = relationship('Course', back_populates='ticket')
 
 
 class Payment(Base):

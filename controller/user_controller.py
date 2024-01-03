@@ -10,6 +10,7 @@ from database.base_model import DefaultModel
 def post_user_join(request, session):
     response = DefaultModel()
 
+    type = request.type
     login_id = request.login_id
     password = request.password
     name = request.name
@@ -27,6 +28,7 @@ def post_user_join(request, session):
     session.add(user)
     session.flush()
 
+    user.type = type
     user.login_id = login_id
     user._password = password
     user.name = name
