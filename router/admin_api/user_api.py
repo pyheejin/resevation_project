@@ -80,6 +80,11 @@ class PutUserProfileModel(BaseModel):
                    image_file=image_file)
 
 
+class PostUserTicketCourseModel(BaseModel):
+    user_ticket_id: int
+    course_id: int
+
+
 @router.post('/join', tags=['user'], summary='유저 회원가입')
 def post_user_join(request: PostUserJoinModel = Depends(PostUserJoinModel.as_form),
                    session: Session = Depends(get_db)):
@@ -153,6 +158,76 @@ def put_user_profile(request: PutUserProfileModel = Depends(PutUserProfileModel.
         response = user_controller.put_user_profile(request=request,
                                                     g=g,
                                                     session=session)
+        response.result_msg = f'{response.result_msg}'
+    except HTTPException as e:
+        print(e.detail)
+
+        session.rollback()
+
+        response = base_model.DefaultModel()
+        common.error_response(response, e.detail, f'{result_msg} 실패')
+    except Exception as e:
+        print(e.args[0])
+
+        session.rollback()
+
+        response = base_model.DefaultModel()
+        common.error_response(response, e.args[0], f'{result_msg} 실패')
+    else:
+        if response is None:
+            response = base_model.DefaultModel()
+        if response.result_msg is not None:
+            response.result_msg = result_msg + ' 성공'
+    finally:
+        session.commit()
+    return response
+
+
+@router.post('/ticket-course', tags=['user'], summary='티켓 수업 연결')
+def post_user_ticket_course(request: PostUserTicketCourseModel,
+                            session: Session = Depends(get_db),
+                            g: User = Depends(common.get_access_token)):
+    result_msg = '티켓 수업 연결'
+    try:
+        response = user_controller.post_user_ticket_course(request=request,
+                                                           session=session,
+                                                           g=g)
+        response.result_msg = f'{response.result_msg}'
+    except HTTPException as e:
+        print(e.detail)
+
+        session.rollback()
+
+        response = base_model.DefaultModel()
+        common.error_response(response, e.detail, f'{result_msg} 실패')
+    except Exception as e:
+        print(e.args[0])
+
+        session.rollback()
+
+        response = base_model.DefaultModel()
+        common.error_response(response, e.args[0], f'{result_msg} 실패')
+    else:
+        if response is None:
+            response = base_model.DefaultModel()
+        if response.result_msg is not None:
+            response.result_msg = result_msg + ' 성공'
+    finally:
+        session.commit()
+    return response
+
+
+@router.get('/excel', tags=['user'], summary='유저 내려받기', dependencies=[Depends(common.get_access_token)])
+def get_user_excel(session: Session = Depends(get_db),
+                   g: User = Depends(common.get_access_token),
+                   user_name: Optional[str] = None,
+                   course_name: Optional[str] = None):
+    result_msg = '유저 내려받기'
+    try:
+        response = user_controller.get_user_excel(session=session,
+                                                  g=g,
+                                                  user_name=user_name,
+                                                  course_name=course_name)
         response.result_msg = f'{response.result_msg}'
     except HTTPException as e:
         print(e.detail)

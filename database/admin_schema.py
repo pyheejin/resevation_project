@@ -128,18 +128,23 @@ class TicketDetailSchema(Schema):
 ticket_detail_schema = TicketDetailSchema(many=False)
 
 
+class UserNameSchema(Schema):
+    id = fields.Int()
+    name = fields.String()
+
+
 class UserTicketListSchema(Schema):
     id = fields.Int()
     remain_count = fields.Int()
     created_at = fields.DateTime('%Y-%m-%d %H:%M:%S')
 
+    user = fields.Nested(UserNameSchema(), many=False)
     course = fields.Nested(CourseNameReviewSchema(), many=False)
     ticket = fields.Nested(TicketNameSchema(), many=False)
 
 
-class UserNameSchema(Schema):
-    id = fields.Int()
-    name = fields.String()
+user_list_schema = UserTicketListSchema(many=True)
+user_detail_schema = UserTicketListSchema(many=False)
 
 
 class UserListSchema(Schema):
@@ -149,8 +154,7 @@ class UserListSchema(Schema):
     user_ticket = fields.Nested(UserTicketListSchema(), many=True)
 
 
-user_list_schema = UserListSchema(many=True)
-user_detail_schema = UserListSchema(many=False)
+
 
 
 class QnaListSchema(Schema):

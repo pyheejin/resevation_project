@@ -2,6 +2,7 @@ import os
 
 from PIL import Image
 from io import BytesIO
+from openpyxl import Workbook
 from sqlalchemy import and_, or_
 from sqlalchemy.orm import contains_eager
 from fastapi import HTTPException, UploadFile
@@ -187,6 +188,85 @@ def put_user_profile(request, g, session):
     return response
 
 
+def post_user_ticket_course(request, session, g):
+    response = DefaultModel()
+
+    user_ticket = session.query(UserTicket).filter(UserTicket.id == request.user_ticket_id,
+                                                   UserTicket.status >= constant.STATUS_INACTIVE).first()
+    if user_ticket is None:
+        raise HTTPException(detail=ERROR_DIC[constant.ERROR_DATA_NOT_EXIST][1],
+                            status_code=ERROR_DIC[constant.ERROR_DATA_NOT_EXIST][0])
+
+    course = session.query(Course).filter(Course.id == request.course_id,
+                                          Course.status == constant.STATUS_ACTIVE).first()
+    if course is None:
+        raise HTTPException(detail=ERROR_DIC[constant.ERROR_DATA_NOT_EXIST][1],
+                            status_code=ERROR_DIC[constant.ERROR_DATA_NOT_EXIST][0])
+
+    user_id = g.result_data.get('user', None).get('id', None)
+    if course.user_id != user_id:
+        raise HTTPException(detail=ERROR_DIC[constant.ERROR_UNAUTHORIZED][1],
+                            status_code=ERROR_DIC[constant.ERROR_UNAUTHORIZED][0])
+
+    user_ticket.course_id = course.id
+    user_ticket.remain_count -= 1
+    return response
+
+
+def get_user_excel(session, g, user_name, course_name):
+    response = DefaultModel()
+
+    filter_list = []
+    if user_name is not None:
+        filter_list.append(or_(User.name.like(f'%{user_name}%'),
+                               User.nickname.like(f'%{user_name}%')))
+
+    if course_name is not None:
+        filter_list.append(Course.title.like(f'%{course_name}%'))
+
+    user_id = g.result_data.get('user', None).get('id', None)
+    user_query = session.query(UserTicket).outerjoin(User, User.id == UserTicket.user_id
+                                        ).outerjoin(Course, Course.id == UserTicket.course_id
+                                        ).outerjoin(Ticket, Ticket.id == UserTicket.ticket_id
+                                        ).filter(Ticket.user_id == user_id,
+                                                 Course.id is not None,
+                                                 User.status >= constant.STATUS_INACTIVE,
+                                        ).options(contains_eager(UserTicket.user),
+                                                  contains_eager(UserTicket.ticket),
+                                                  contains_eager(UserTicket.course))
+    users = user_query.filter(*filter_list).all()
+
+    # 엑셀파일 쓰기
+    write_wb = Workbook()
+
+    # Sheet1에다 입력
+    write_ws = write_wb.active
+
+    # 행 단위로 추가
+    write_ws.append(['No', '수업명', '유저명', '수강권', '잔여회차', '구매일'])
+
+    for idx, row in enumerate(users):
+        if row.course is not None:
+            course_title = row.course.title
+        else:
+            course_title = ''
+
+        write_ws.append([idx+1, course_title, row.user.name, f'{row.ticket.count}회차 수강권', row.remain_count, row.created_at])
+
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    upload_dir = os.path.join(base_dir, 'download')
+    if not os.path.exists(upload_dir):
+        os.makedirs(upload_dir, exist_ok=True)
+
+    path = f'{upload_dir}/{datetime.now().date()}.xlsx'
+    write_wb.save(path)
+
+    response.result_data = {
+        'file_path': path
+    }
+    return response
+
+
 def get_user(session, g, user_name, course_name, page, page_size):
     """
     로그인 한 강사의 티켓을 구매한 유저만 표시 되어야 함
@@ -202,17 +282,15 @@ def get_user(session, g, user_name, course_name, page, page_size):
         filter_list.append(Course.title.like(f'%{course_name}%'))
 
     user_id = g.result_data.get('user', None).get('id', None)
-    users = session.query(User).outerjoin(UserTicket, and_(UserTicket.user_id == User.id,
-                                                           UserTicket.status >= constant.STATUS_INACTIVE)
-                                ).outerjoin(Ticket, Ticket.id == UserTicket.ticket_id
-                                ).outerjoin(Course, Course.id == UserTicket.course_id
-                                ).filter(*filter_list,
-                                         Ticket.user_id == user_id,
-                                         User.status >= constant.STATUS_INACTIVE,
-                                ).options(contains_eager(User.user_ticket),
-                                          contains_eager(User.user_ticket).contains_eager(UserTicket.ticket),
-                                          contains_eager(User.user_ticket).contains_eager(UserTicket.course),
-                                ).offset(page_size * (page - 1)).limit(page_size).all()
+    user_query = session.query(UserTicket).outerjoin(User, User.id == UserTicket.user_id
+                                            ).outerjoin(Course, Course.id == UserTicket.course_id
+                                            ).outerjoin(Ticket, Ticket.id == UserTicket.ticket_id
+                                            ).filter(Ticket.user_id == user_id,
+                                                     User.status >= constant.STATUS_INACTIVE,
+                                            ).options(contains_eager(UserTicket.user),
+                                                      contains_eager(UserTicket.ticket),
+                                                      contains_eager(UserTicket.course))
+    users = user_query.filter(*filter_list).offset(page_size * (page - 1)).limit(page_size).all()
 
     response.result_data = {
         'users': user_list_schema.dump(users)
