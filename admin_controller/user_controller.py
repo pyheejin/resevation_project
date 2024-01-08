@@ -129,6 +129,64 @@ def post_user_login(request, session):
     return response
 
 
+def put_user_profile(request, g, session):
+    response = DefaultModel()
+
+    user_id = g.result_data.get('user', None).get('id', None)
+    user = session.query(User).filter(User.id == user_id,
+                                      User.status >= constant.STATUS_INACTIVE).first()
+    if user is None:
+        raise HTTPException(detail=ERROR_DIC[constant.ERROR_DATA_NOT_EXIST][1],
+                            status_code=ERROR_DIC[constant.ERROR_DATA_NOT_EXIST][0])
+
+    if request.name is not None:
+        user.name = request.name
+
+    if request.nickname is not None:
+        user.nickname = request.nickname
+
+    if request.short_introduction is not None:
+        user.short_introduction = request.short_introduction
+
+    if request.email is not None:
+        user.email = request.email
+
+    if request.phone is not None:
+        user.phone = request.phone
+
+    if request.introduction is not None:
+        user.introduction = request.introduction
+
+    # 프로필 이미지
+    if request.image_file is not None:
+        image = request.image_file
+
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        upload_dir = os.path.join(base_dir, 'static/image/user/')
+        if not os.path.exists(upload_dir):
+            os.makedirs(upload_dir, exist_ok=True)
+
+        file_data = image.filename.split('.')
+        filename = f"user_{user.id}_profile_{file_data[0][:10]}"
+        extension = 'jpeg'
+
+        with open(os.path.join(upload_dir, f'{filename}.{extension}'), 'wb+') as file:
+            file.write(image.file.read())
+            file.close()
+
+        img = Image.open(f'{upload_dir}{filename}.{extension}')
+        img.save(f'{upload_dir}{filename}.{extension}', format=extension, quality=50)  # 압축률 50%
+        img.close()
+
+        image_url = f'{upload_dir}{filename}.{extension}'
+        user.image_url = image_url
+
+    response.result_data = {
+        'user': user_profile_schema.dump(user)
+    }
+    return response
+
+
 def get_user(session, g, user_name, course_name, page, page_size):
     """
     로그인 한 강사의 티켓을 구매한 유저만 표시 되어야 함
@@ -148,9 +206,9 @@ def get_user(session, g, user_name, course_name, page, page_size):
                                                            UserTicket.status >= constant.STATUS_INACTIVE)
                                 ).outerjoin(Ticket, Ticket.id == UserTicket.ticket_id
                                 ).outerjoin(Course, Course.id == UserTicket.course_id
-                                ).filter(User.status >= constant.STATUS_INACTIVE,
+                                ).filter(*filter_list,
                                          Ticket.user_id == user_id,
-                                         *filter_list
+                                         User.status >= constant.STATUS_INACTIVE,
                                 ).options(contains_eager(User.user_ticket),
                                           contains_eager(User.user_ticket).contains_eager(UserTicket.ticket),
                                           contains_eager(User.user_ticket).contains_eager(UserTicket.course),
@@ -162,43 +220,30 @@ def get_user(session, g, user_name, course_name, page, page_size):
     return response
 
 
-def get_user_detail(user_id, session):
+def get_user_detail(user_id, g, session):
     response = DefaultModel()
 
-    user = session.query(User).filter(User.id == user_id,
-                                      User.status >= constant.STATUS_INACTIVE).first()
-    if user is None:
+    login_user_id = g.result_data.get('user', None).get('id', None)
+    user_query = session.query(User).outerjoin(UserTicket, and_(UserTicket.user_id == User.id,
+                                                                UserTicket.user_id == user_id,
+                                                                UserTicket.status >= constant.STATUS_INACTIVE)
+                                    ).outerjoin(Ticket, Ticket.id == UserTicket.ticket_id
+                                    ).outerjoin(Course, Course.id == UserTicket.course_id
+                                    ).outerjoin(Review, and_(Review.course_id == Course.id,
+                                                             Review.user_id == user_id,
+                                                             Review.status == constant.STATUS_ACTIVE)
+                                    ).filter(User.id == user_id,
+                                             Ticket.user_id == login_user_id,
+                                    ).options(contains_eager(User.user_ticket),
+                                              contains_eager(User.user_ticket).contains_eager(UserTicket.ticket),
+                                              contains_eager(User.user_ticket).contains_eager(UserTicket.course),
+                                              contains_eager(User.user_ticket).contains_eager(UserTicket.course
+                                                                                ).contains_eager(Course.review),
+                                    ).all()
+    if len(user_query) == 0:
         raise HTTPException(detail=ERROR_DIC[constant.ERROR_DATA_NOT_EXIST][1],
                             status_code=ERROR_DIC[constant.ERROR_DATA_NOT_EXIST][0])
-
-    response.result_data = {
-        'user': user_detail_schema.dump(user)
-    }
-    return response
-
-
-def put_user_detail(user_id, request, session):
-    response = DefaultModel()
-
-    login_id = request.login_id
-    password = request.password
-    name = request.name
-    nickname = request.nickname
-    phone = request.phone
-    email = request.email
-
-    user = session.query(User).filter(User.id == user_id,
-                                      User.status >= constant.STATUS_INACTIVE).first()
-    if user is None:
-        raise HTTPException(detail=ERROR_DIC[constant.ERROR_DATA_NOT_EXIST][1],
-                            status_code=ERROR_DIC[constant.ERROR_DATA_NOT_EXIST][0])
-
-    user.login_id = login_id
-    user._password = password
-    user.name = name
-    user.nickname = nickname
-    user.phone = phone
-    user.email = email
+    user = user_query[0]
 
     response.result_data = {
         'user': user_detail_schema.dump(user)

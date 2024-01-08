@@ -31,6 +31,8 @@ class User(Base):
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
     user_ticket = relationship('UserTicket', back_populates='user')
+    qna_user = relationship('Qna', back_populates='user')
+    review_user = relationship('Review', back_populates='user')
 
     # 부분 암호화
     @hybrid_property
@@ -57,6 +59,8 @@ class Course(Base):
 
     user = relationship('User')
     ticket = relationship('UserTicket', back_populates='course')
+    qna_course = relationship('Qna', back_populates='course')
+    review_course = relationship('Review', back_populates='course', uselist=False)
     course_detail = relationship('CourseDetail', back_populates='course')
 
 
@@ -138,7 +142,8 @@ class Review(Base):
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
-    course = relationship('Course')
+    user = relationship('User', back_populates='review_user')
+    course = relationship('Course', back_populates='review_course')
 
 
 class Qna(Base):
@@ -154,5 +159,5 @@ class Qna(Base):
     created_at = Column(DateTime, default=datetime.now)
     updated_at = Column(DateTime, default=datetime.now, onupdate=datetime.now)
 
-    user = relationship('User')
-    course = relationship('Course')
+    user = relationship('User', back_populates='qna_user')
+    course = relationship('Course', back_populates='qna_course')

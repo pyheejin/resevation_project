@@ -16,6 +16,10 @@ api_tags_metadata = [
         'description': '수업'
     },
     {
+        'name': 'qna',
+        'description': '문의'
+    },
+    {
         'name': 'user',
         'description': '유저'
     },

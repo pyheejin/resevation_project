@@ -25,18 +25,21 @@ class LoginSchema(Schema):
 login_schema = LoginSchema(many=False)
 
 
-class UserDetailSchema(Schema):
+class UserProfileSchema(Schema):
     id = fields.Int()
     status = fields.Int()
     type = fields.Int()
-    name = fields.String()
-    phone = fields.String()
     login_id = fields.String()
+    name = fields.String()
+    nickname = fields.String()
     email = fields.String()
+    phone = fields.String()
+    short_introduction = fields.String()
+    introduction = fields.String()
     last_login_date = fields.DateTime('%Y-%m-%d %H:%M:%S')
 
 
-user_detail_schema = UserDetailSchema(many=False)
+user_profile_schema = UserProfileSchema(many=False)
 
 
 class CourseListSchema(Schema):
@@ -78,9 +81,21 @@ class CourseSchema(Schema):
 course_schema = CourseSchema(many=False)
 
 
+class IsReviewSchema(Schema):
+    id = fields.Int()
+    status = fields.Int()
+    is_best = fields.Int()
+
+
 class CourseNameSchema(Schema):
     id = fields.Int()
     title = fields.String()
+
+
+class CourseNameReviewSchema(Schema):
+    id = fields.Int()
+    title = fields.String()
+    review = fields.Nested(IsReviewSchema(), many=False)
 
 
 class TicketNameSchema(Schema):
@@ -118,8 +133,13 @@ class UserTicketListSchema(Schema):
     remain_count = fields.Int()
     created_at = fields.DateTime('%Y-%m-%d %H:%M:%S')
 
-    course = fields.Nested(CourseNameSchema(), many=False)
+    course = fields.Nested(CourseNameReviewSchema(), many=False)
     ticket = fields.Nested(TicketNameSchema(), many=False)
+
+
+class UserNameSchema(Schema):
+    id = fields.Int()
+    name = fields.String()
 
 
 class UserListSchema(Schema):
@@ -130,6 +150,7 @@ class UserListSchema(Schema):
 
 
 user_list_schema = UserListSchema(many=True)
+user_detail_schema = UserListSchema(many=False)
 
 
 class QnaListSchema(Schema):
@@ -140,7 +161,7 @@ class QnaListSchema(Schema):
     created_at = fields.DateTime('%Y-%m-%d %H:%M:%S')
 
     course = fields.Nested(CourseNameSchema(), many=False)
-    user = fields.Nested(UserListSchema(), many=False)
+    user = fields.Nested(UserNameSchema(), many=False)
 
 
 qna_list_schema = QnaListSchema(many=True)
@@ -150,12 +171,12 @@ class QnaDetailSchema(Schema):
     id = fields.Int()
     status = fields.Int()
     is_reply = fields.Int()
-    user_id = fields.Int()
-    course_id = fields.Int()
     question = fields.String()
     answer = fields.String()
     created_at = fields.DateTime('%Y-%m-%d %H:%M:%S')
-    updated_at = fields.DateTime('%Y-%m-%d %H:%M:%S')
+
+    course = fields.Nested(CourseNameSchema(), many=False)
+    user = fields.Nested(UserNameSchema(), many=False)
 
 
 qna_detail_schema = QnaDetailSchema(many=False)
@@ -166,11 +187,11 @@ class ReviewListSchema(Schema):
     status = fields.Int()
     is_best = fields.Int()
     satisfaction = fields.Int()
-    user_id = fields.Int()
-    course_id = fields.Int()
     title = fields.String()
     created_at = fields.DateTime('%Y-%m-%d %H:%M:%S')
-    updated_at = fields.DateTime('%Y-%m-%d %H:%M:%S')
+
+    course = fields.Nested(CourseNameSchema(), many=False)
+    user = fields.Nested(UserNameSchema(), many=False)
 
 
 review_list_schema = ReviewListSchema(many=True)
@@ -181,12 +202,12 @@ class ReviewDetailSchema(Schema):
     status = fields.Int()
     is_best = fields.Int()
     satisfaction = fields.Int()
-    user_id = fields.Int()
-    course_id = fields.Int()
     title = fields.String()
     description = fields.String()
     created_at = fields.DateTime('%Y-%m-%d %H:%M:%S')
-    updated_at = fields.DateTime('%Y-%m-%d %H:%M:%S')
+
+    course = fields.Nested(CourseNameSchema(), many=False)
+    user = fields.Nested(UserNameSchema(), many=False)
 
 
 review_detail_schema = ReviewDetailSchema(many=False)

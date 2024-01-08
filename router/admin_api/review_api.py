@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException, APIRouter
@@ -5,6 +6,7 @@ from fastapi import Depends, HTTPException, APIRouter
 from config import common
 from database import base_model
 from database.database import *
+from database.models import User
 from admin_controller import review_controller
 
 
@@ -15,10 +17,16 @@ router = APIRouter(
 
 
 @router.get('', tags=['review'], summary='리뷰 목록')
-def get_review(session: Session = Depends(get_db)):
+def get_review(user_name: Optional[str] = None,
+               course_name: Optional[str] = None,
+               session: Session = Depends(get_db),
+               g: User = Depends(common.get_access_token)):
     result_msg = '리뷰 목록'
     try:
-        response = review_controller.get_review(session=session)
+        response = review_controller.get_review(user_name=user_name,
+                                                course_name=course_name,
+                                                session=session,
+                                                g=g)
         response.result_msg = f'{response.result_msg}'
     except HTTPException as e:
         print(e.detail)
@@ -46,11 +54,13 @@ def get_review(session: Session = Depends(get_db)):
 
 @router.get('/{review_id}', tags=['review'], summary='리뷰 상세')
 def get_review_detail(review_id: int,
-                      session: Session = Depends(get_db)):
+                      session: Session = Depends(get_db),
+                      g: User = Depends(common.get_access_token)):
     result_msg = '리뷰 상세'
     try:
         response = review_controller.get_review_detail(review_id=review_id,
-                                                       session=session)
+                                                       session=session,
+                                                       g=g)
         response.result_msg = f'{response.result_msg}'
     except HTTPException as e:
         print(e.detail)

@@ -1,4 +1,5 @@
 from fastapi import HTTPException
+from sqlalchemy import and_, or_
 from sqlalchemy.orm import contains_eager
 
 from database.models import *
@@ -7,27 +8,42 @@ from config.constant import ERROR_DIC
 from database.base_model import DefaultModel
 
 
-def get_qna(session):
+def get_qna(course_name, user_name, session, g):
     response = DefaultModel()
 
-    qnas = session.query(Qna).outerjoin(User, User.id == Qna.user_id
-                            ).outerjoin(Course, Course.id == Qna.course_id
-                            ).filter(Qna.status >= constant.STATUS_INACTIVE
-                            ).options(contains_eager(Qna.user),
-                                      contains_eager(Qna.course)).all()
+    filter_list = []
+    if user_name is not None:
+        filter_list.append(or_(User.name.like(f'%{user_name}%'),
+                               User.nickname.like(f'%{user_name}%')))
+
+    if course_name is not None:
+        filter_list.append(Course.title.like(f'%{course_name}%'))
+
+    user_id = g.result_data.get('user', None).get('id', None)
+    qna_query = session.query(Qna).outerjoin(User, User.id == Qna.user_id
+                                ).outerjoin(Course, Course.id == Qna.course_id
+                                ).filter(Course.user_id == user_id,
+                                         Qna.status >= constant.STATUS_INACTIVE
+                                ).options(contains_eager(Qna.user),
+                                          contains_eager(Qna.course))
+    qnas = qna_query.filter(*filter_list).all()
 
     response.result_data = {
+        'total_count': len(qna_query.all()),
+        'search_count': len(qnas),
         'qnas': qna_list_schema.dump(qnas)
     }
     return response
 
 
-def get_qna_detail(qna_id, session):
+def get_qna_detail(qna_id, g, session):
     response = DefaultModel()
 
+    user_id = g.result_data.get('user', None).get('id', None)
     qna = session.query(Qna).outerjoin(User, User.id == Qna.user_id
                             ).outerjoin(Course, Course.id == Qna.course_id
                             ).filter(Qna.id == qna_id,
+                                     Course.user_id == user_id,
                                      Qna.status >= constant.STATUS_INACTIVE
                             ).options(contains_eager(Qna.user),
                                       contains_eager(Qna.course)).first()
@@ -39,19 +55,6 @@ def get_qna_detail(qna_id, session):
     response.result_data = {
         'qna': qna_detail_schema.dump(qna)
     }
-    return response
-
-
-def delete_qna_detail(qna_id, session):
-    response = DefaultModel()
-
-    qna = session.query(Qna).filter(Qna.id == qna_id,
-                                    Qna.status >= constant.STATUS_INACTIVE).first()
-    if qna is None:
-        raise HTTPException(detail=ERROR_DIC[constant.ERROR_DATA_NOT_EXIST][1],
-                            status_code=ERROR_DIC[constant.ERROR_DATA_NOT_EXIST][0])
-
-    qna.status = constant.STATUS_DELETED
     return response
 
 
