@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException, APIRouter
 
-from config import common
+from config import common, constant
 from database import base_model
 from database.database import *
 from database.models import User
@@ -23,12 +23,16 @@ class PostQnaAnswerModel(BaseModel):
 @router.get('', tags=['qna'], summary='문의 목록')
 def get_qna(user_name: Optional[str] = None,
             course_name: Optional[str] = None,
+            page: Optional[int] = constant.DEFAULT_PAGE,
+            page_size: Optional[int] = constant.DEFAULT_PAGE_SIZE,
             session: Session = Depends(get_db),
             g: User = Depends(common.get_access_token)):
     result_msg = '문의 목록'
     try:
         response = qna_controller.get_qna(user_name=user_name,
                                           course_name=course_name,
+                                          page=page,
+                                          page_size=page_size,
                                           session=session,
                                           g=g)
         response.result_msg = f'{response.result_msg}'

@@ -6,15 +6,20 @@ from config.constant import ERROR_DIC
 from database.base_model import DefaultModel
 
 
-def get_ticket(session, status):
+def get_ticket(page, page_size, session, status):
     response = DefaultModel()
 
     filter_list = []
     if status is not None:
         filter_list.append(Ticket.status == status)
 
-    tickets = session.query(Ticket).filter(*filter_list).all()
+    ticket_query = session.query(Ticket).filter(Ticket.status >= constant.STATUS_INACTIVE)
+    ticket_filter = ticket_query.filter(*filter_list)
+    tickets = ticket_filter.offset(page_size * (page - 1)).limit(page_size).all()
+
     response.result_data = {
+        'total_count': len(ticket_query.all()),
+        'search_count': len(ticket_filter.all()),
         'tickets': ticket_list_schema.dump(tickets)
     }
     return response

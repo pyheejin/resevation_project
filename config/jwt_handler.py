@@ -32,10 +32,10 @@ class JWT:
 
         try:
             response.result_data = jwt.decode(token, key=self.SECRET_KEY, algorithms=self.ALGORITHM)
-        except jwt.ExpiredSignatureError as e:  # 토큰 인증 시간 만료
+        except jwt.ExpiredSignatureError:  # 토큰 인증 시간 만료
             raise HTTPException(detail=ERROR_DIC[ERROR_TOKEN_EXPIRED][1],
                                 status_code=ERROR_DIC[ERROR_TOKEN_EXPIRED][0])
-        except jwt.InvalidTokenError as e:  # 토큰 검증 실패
+        except jwt.InvalidTokenError:  # 토큰 검증 실패
             raise HTTPException(detail=ERROR_DIC[ERROR_UNAUTHORIZED][1],
                                 status_code=ERROR_DIC[ERROR_UNAUTHORIZED][0])
         return response

@@ -18,7 +18,6 @@ class User(Base):
     login_id = Column(String(45), comment='아이디')
     password = Column(String(255), comment='비밀번호')
     name = Column(String(45), comment='이름')
-    nickname = Column(String(45), comment='닉네임')
     email = Column(String(45), comment='이메일')
     phone = Column(String(45), comment='전화 번호')
     short_introduction = Column(String(45), comment='한 줄 소개')

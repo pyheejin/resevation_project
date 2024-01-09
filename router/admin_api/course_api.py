@@ -33,13 +33,15 @@ class PostCourseModel(BaseModel):
 def get_course(session: Session = Depends(get_db),
                status: Optional[int] = constant.STATUS_ACTIVE,
                page: Optional[int] = constant.DEFAULT_PAGE,
-               page_size: Optional[int] = constant.DEFAULT_PAGE_SIZE):
+               page_size: Optional[int] = constant.DEFAULT_PAGE_SIZE,
+               g: User = Depends(common.get_access_token)):
     result_msg = '수업 목록'
     try:
         response = course_controller.get_course(session=session,
                                                 status=status,
                                                 page=page,
-                                                page_size=page_size)
+                                                page_size=page_size,
+                                                g=g)
         response.result_msg = f'{response.result_msg}'
     except HTTPException as e:
         print(e.detail)

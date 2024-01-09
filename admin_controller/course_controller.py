@@ -9,19 +9,25 @@ from config.constant import ERROR_DIC
 from database.base_model import DefaultModel
 
 
-def get_course(session, status, page, page_size):
+def get_course(session, status, page, page_size, g):
     response = DefaultModel()
+
+    user_id = g.result_data.get('user', None).get('id', None)
 
     filter_list = []
     if status is not None:
         filter_list.append(Course.status == status)
 
-    courses = session.query(Course).outerjoin(CourseDetail, and_(Course.id == CourseDetail.course_id,
-                                                                 CourseDetail.status == constant.STATUS_ACTIVE)
-                                ).filter(*filter_list
-                                ).options(contains_eager(Course.course_detail)
-                                ).offset(page_size * (page - 1)).limit(page_size).all()
+    course_query = session.query(Course).outerjoin(CourseDetail, and_(Course.id == CourseDetail.course_id,
+                                                                      CourseDetail.status == constant.STATUS_ACTIVE)
+                                        ).filter(Course.user_id == user_id
+                                        ).options(contains_eager(Course.course_detail))
+    course_filter = course_query.filter(*filter_list)
+    courses = course_filter.offset(page_size * (page - 1)).limit(page_size).all()
+
     response.result_data = {
+        'total_count': len(course_query.all()),
+        'search_count': len(course_filter.all()),
         'courses': course_list_schema.dump(courses)
     }
     return response

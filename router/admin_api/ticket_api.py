@@ -23,11 +23,15 @@ class PostTicketModel(BaseModel):
 
 
 @router.get('', tags=['ticket'], summary='티켓 목록')
-def get_ticket(session: Session = Depends(get_db),
+def get_ticket(page: Optional[int] = constant.DEFAULT_PAGE,
+               page_size: Optional[int] = constant.DEFAULT_PAGE_SIZE,
+               session: Session = Depends(get_db),
                status: Optional[int] = constant.STATUS_ACTIVE):
     result_msg = '티켓 목록'
     try:
-        response = ticket_controller.get_ticket(session=session,
+        response = ticket_controller.get_ticket(page=page,
+                                                page_size=page_size,
+                                                session=session,
                                                 status=status)
         response.result_msg = f'{response.result_msg}'
     except HTTPException as e:

@@ -15,13 +15,19 @@ def get_course(session, user_id, page, page_size):
     if user_id is not None:
         filter_list.append(Course.user_id == user_id)
 
-    courses = session.query(Course).outerjoin(User, and_(User.id == Course.user_id,
-                                                         User.status == constant.STATUS_ACTIVE)
-                                    ).filter(Course.status == constant.STATUS_ACTIVE,
-                                             *filter_list
-                                    ).options(contains_eager(Course.user)
-                                    ).offset(page_size * (page - 1)).limit(page_size).all()
-    response.result_data = course_list_schema.dump(courses)
+    course_query = session.query(Course).outerjoin(User, and_(User.id == Course.user_id,
+                                                              User.status == constant.STATUS_ACTIVE)
+                                        ).filter(*filter_list,
+                                                 Course.status == constant.STATUS_ACTIVE
+                                        ).options(contains_eager(Course.user))
+    course_filter = course_query.filter(*filter_list)
+    courses = course_filter.offset(page_size * (page - 1)).limit(page_size).all()
+
+    response.result_data = {
+        'total_count': len(course_query.all()),
+        'search_count': len(course_filter.all()),
+        'courses': course_list_schema.dump(courses)
+    }
     return response
 
 

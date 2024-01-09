@@ -8,13 +8,12 @@ from config.constant import ERROR_DIC
 from database.base_model import DefaultModel
 
 
-def get_review(course_name, user_name, session, g):
+def get_review(course_name, user_name, page, page_size, session, g):
     response = DefaultModel()
 
     filter_list = []
     if user_name is not None:
-        filter_list.append(or_(User.name.like(f'%{user_name}%'),
-                               User.nickname.like(f'%{user_name}%')))
+        filter_list.append(User.name.like(f'%{user_name}%'))
 
     if course_name is not None:
         filter_list.append(Course.title.like(f'%{course_name}%'))
@@ -26,11 +25,12 @@ def get_review(course_name, user_name, session, g):
                                                  Review.status >= constant.STATUS_INACTIVE
                                         ).options(contains_eager(Review.user),
                                                   contains_eager(Review.course))
-    reviews = review_query.filter(*filter_list).all()
+    review_filter = review_query.filter(*filter_list)
+    reviews = review_filter.offset(page_size * (page - 1)).limit(page_size).all()
 
     response.result_data = {
         'total_count': len(review_query.all()),
-        'search_count': len(reviews),
+        'search_count': len(review_filter.all()),
         'reviews': review_list_schema.dump(reviews)
     }
     return response

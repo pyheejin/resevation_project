@@ -75,6 +75,11 @@ class CourseDetailSchema(Schema):
 course_detail_schema = CourseDetailSchema(many=False)
 
 
+class UserNameSchema(Schema):
+    id = fields.Int()
+    name = fields.String()
+
+
 class TicketListSchema(Schema):
     id = fields.Int()
     status = fields.Int()
@@ -137,11 +142,11 @@ class ReviewListSchema(Schema):
     status = fields.Int()
     is_best = fields.Int()
     satisfaction = fields.Int()
-    user_id = fields.Int()
-    course_id = fields.Int()
     title = fields.String()
     created_at = fields.DateTime('%Y-%m-%d %H:%M:%S')
-    updated_at = fields.DateTime('%Y-%m-%d %H:%M:%S')
+
+    course = fields.Nested(CourseNameSchema(), many=False)
+    user = fields.Nested(UserNameSchema(), many=False)
 
 
 review_list_schema = ReviewListSchema(many=True)
@@ -152,12 +157,12 @@ class ReviewDetailSchema(Schema):
     status = fields.Int()
     is_best = fields.Int()
     satisfaction = fields.Int()
-    user_id = fields.Int()
-    course_id = fields.Int()
     title = fields.String()
     description = fields.String()
     created_at = fields.DateTime('%Y-%m-%d %H:%M:%S')
-    updated_at = fields.DateTime('%Y-%m-%d %H:%M:%S')
+
+    course = fields.Nested(CourseNameSchema(), many=False)
+    user = fields.Nested(UserNameSchema(), many=False)
 
 
 review_detail_schema = ReviewDetailSchema(many=False)
